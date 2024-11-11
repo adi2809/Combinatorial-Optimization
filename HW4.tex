@@ -1,0 +1,147 @@
+\documentclass{article}
+\setlength{\parskip}{3mm}
+
+\usepackage{tikz, pgfplots}
+\usetikzlibrary{automata}
+\usetikzlibrary{graphs,shapes.geometric} 
+\usetikzlibrary{patterns}
+\usepackage{graphicx, float, xcolor}
+\usepackage{mathtools, mathrsfs, caption}
+\usepackage{amsmath, amsfonts, amssymb, amsthm, mathtools, mathrsfs}
+\captionsetup{font=small}
+\numberwithin{equation}{section}
+\newtheorem{theorem}{Theorem}
+
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\newcommand\mycommfont[1]{\footnotesize\ttfamily\textcolor{blue}{#1}}
+% \SetCommentSty{mycommfont}
+
+% \SetKwInput{KwInput}{Input}                % Set the Input
+% \SetKwInput{KwOutput}{Output}              % set the Output
+\newcommand{\bigOh}[1]{\mathcal{O}\left(#1\right)}
+\newcommand{\smallOh}[1]{\mathcal{o}(#1)}
+\newcommand{\bigOmega}[1]{\Omega\left(#1\right)}
+\newcommand{\smallomega}[1]{\omega(#1)}
+\newcommand{\bigTheta}[1]{\Theta(#1)}
+\newcommand{\curlyBrace}[1]{\left\{#1\right\}}
+\newcommand{\roundBrace}[1]{\left(#1\right)}
+\newcommand{\probsymb}[1]{\mathbb{P}\curlyBrace{#1}}
+
+\usepackage{hyperref, biblatex}
+\hypersetup{linkcolor=blue}
+\usepackage[breakable,skins]{tcolorbox}
+
+\tcbuselibrary{breakable}
+\newcommand{\stepNumber}[1]{\textcolor{blue}{Step-(#1)}}
+\newcommand{\card}[1]{\left|#1\right|}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\chead{IEOR 6614: Homework 4}
+\rhead{\textbf{UNI:} ag4808}
+\lhead{04/09/2024}
+
+\begin{document}
+
+\section{Problem 1}
+Solving a minimum-weight perfect matching in a general graph $G$ is equivalent to solving a minimum-weight perfect matching on a complete graph (edges that are not there can be taken as zero-weight edges). We are given that $n = \card{V}$, is even. The primal dual algorithm performs the following update step at each iteration, 
+\begin{itemize}
+    \item $z_x \leftarrow z_x - \varepsilon, \, \, \forall x \in X$ 
+    \item $z_y \leftarrow z_y + \varepsilon, \, \, \forall y \in Y$ 
+\end{itemize}
+In the update step we consider the active nodes of the maximal-alternating forest $F$ of $G_z$ (post shrinking the blossoms present). To show existence of a dual-optimal solution it is sufficient to show that the dual solution remains non-negative after the update for all iterations. Now the value of the dual variables for a outer node is only increased, so we need to check only for the inner nodes in the alternating forest. Let us pick some inner node $x\in X$ and the dual variable associated with it as $z_x$. Let us call the outer nodes adjacent to $x$ as $y$ and $w$, and the edges $e_1 =wx$, $e_2 = xy$ and $e_3 = wy$. Then for dual-feasibility we must have, 
+\begin{equation}
+    z_w+z_x + \sum_{e_1\in \delta{A}} z_A\le c_{wx}
+\end{equation}
+\begin{equation}
+    z_x+z_y + \sum_{e_2\in \delta{A}} z_A\le c_{xy}
+\end{equation}
+\begin{equation}
+    z_w+z_y + \sum_{e_3\in \delta{A}} z_A\le c_{wy}
+\end{equation}
+We update the dual solution and update the graph $G_z$ and write the updated inequalities for the given vertex system. We can add the first two equations after updating and use the triangle-inequality on the costs to get the following equation, 
+\begin{equation}
+    2z_x + z_w + z_y +  \sum_{e_1\in \delta{A}} z_A +  \sum_{e_2\in \delta{A}} z_A \ge c_{wy}
+\end{equation}
+\begin{equation}
+    2\varepsilon + z_w + z_y +  \sum_{e_3\in \delta{A}} z_A  \ge c_{wy}
+\end{equation}
+Now using the above two inequalities we have, 
+\begin{equation}
+    2z_x + \sum_{e_1\in \delta{A}} z_A + \sum_{e_2\in \delta{A}} z_A -  \sum_{e_3\in \delta{A}} z_A \ge 2\varepsilon
+\end{equation}
+Let last terms cancel out as every blossom containing $e_3$ is a disjoint union of blossom containing $e_2$ and $e_1$. Which simplifies to $z_x \ge \varepsilon$ ; hence the update maintains non-negativity at each iteration and we will end up with an optimal solution. 
+\newpage
+\section{Problem 2}
+Let us define the bottleneck-perfect matching problem as follows, 
+\begin{equation*}
+    \begin{array}{ccc}
+        \min_{M\in{P(G)}}&\biggl\{ \max_{e\in M} c(e)\biggr\}&  \\
+    \end{array}
+\end{equation*}
+Here $P(G)$ is the perfect matching polytope for the given graph $G$. We can repurpose the primal-dual algorithm from the lectures for the given objective function as well as tweaking the maximum-cardinality matching function a bit. 
+
+\textbf{Modifying the Max-Cardinality Matching}: 
+To determine an augmenting path with start node $s$ we construct an alternating tree with root $s$. This tree leads to a bi-coloring of its nodes. Therefore we can attach an red color to nodes which bear the same color as the root and a blue color to the other nodes of the tree. Now a blossom is detected whenever there is an edge $e \in M$ between two red nodes. This blossom is then shrunken to a meta-node. The meta-node receives an red-color and we try to enlarge the tree by adding appropriate nodes and edges. If an red node is joined with an exposed node an augmenting path has been detected and the matching can be augmented by changing the role of matching and non-matching edges on this path. For this purpose meta-nodes have to be expanded and the path through these blossoms has to be restored. If all red nodes are only connected with blue nodes, the tree is said to be optimal and no augmenting path starting from node s exists. To determine a maximum cardinality matching alternating trees are built from each exposed node $s$ as root using the above mentioned labeling and shrinking steps. An augmenting path is detected if two red nodes out of two different trees are connected by an edge. If all trees become optimal the actual matching is a maximum cardinality matching in the shrunken graph. After expanding all meta-nodes this matching can be extended to an maximum cardinality matching in the original graph. At the end of the algorithm we obtain a partition of the nodes of the graph as $V = R\cup B\cup X$ (here $R$ is the set of nodes and meta-nodes colored red, $B$ is the set of blue nodes and $X$ is the set of matched nodes) 
+
+Now consider the following algorithm, 
+\begin{algorithm}[H]
+    \scriptsize
+    \caption{Bottleneck-Matching(G)}
+    \begin{algorithmic}[1]
+        \State Initialize $\hat{z} = \min_{e\in E} c_e$
+        \State Create $E_{\hat{z}} = \{e\in E \vert c_e \le \hat{z}\}$, the set of admissible edges. 
+        \State Form the admissible sub-graph as $G_{\hat{z}} = (V, E_{\hat{z}} )$
+        \State $M_{\hat{z}} \leftarrow$ Max-Match$(G_{\hat{z}})$
+        \If{$M_{\hat{z}}$ is a perfect matching}
+            \Return $M_{\hat{z}}$
+        \Else 
+            \State $E'$ is the set of edges between the red-colored nodes not in the same blossom. 
+            \State $E''$ is the set of edges between the red-colored node and the $M_{\hat{z}}$-matched node. 
+            \State Set $z = \min\{c_e \vert e \in E'\cup E'', \, \, c_e > \hat{z} \}$
+            \State $\hat{z} \leftarrow z$
+            \State Repeat \textcolor{blue}{(2)} onwards. 
+        \EndIf
+    \end{algorithmic}
+\end{algorithm}
+
+The algorithm is correct as every perfect matching needs to contain an edge from the set $E' \cup E''$ (I referred the proof of correctness of the max-matching algorithm for general case in the book). Moreover this algorithm works in $\mathcal{O}(n^3)$ (similar analysis as the algorithm from the class for the weighted matching case). 
+\newpage
+\section{Problem 3}
+Given a graph $G =(V, E)$ with weights on edges a set of edges $F\subset E$ forms an edge cover of $G$ if every vertex of the graph is incident to at least one edge in $F$. The weight of the cover $F$ is the sum of the weights of its edges. The problem wants us to find the edge cover with the minimum weight. This can be reduced to the minimum-weight perfect matching problem. 
+
+\textbf{Reduction} Create an identical copy of the graph $G$ and call it $G' = (V', E')$, for each edge in $E'$ the weight is set to zero. Add an edge from each vertex $v \in V$ to $v' \in V'$ with the weight equal to $w^*(v) = \min_{x\in N(v)} w(v, x)$. We name the graph obtained by the union of $G$ and $G'$ along-with the edges connecting the two copies as $H$, and note that it contains $2\card{V}$ vertices and $2\card{E} + \card{V}$ edges.
+
+\begin{theorem}
+    The weight of the minimum-weight perfect matching in $H$ is equal to the weight of a minimum-weight edge-cover in $G$. 
+\end{theorem}
+\begin{proof}
+    Consider the minimum-weight edge cover $F$ in $G$, there is no loss of generality in assuming that a minimum weight edge cover has no path of three edges since the middle edge can be removed from the cover thus reducing the weight further and contradicting optimality. Hence the edge cover $F$ us the union of trees of height 1. For each tree that has a vertex of degree more than one, we can match one of the leaf nodes to its copy in $G'$, with weight at most the weight of the edge incident on the leaf vertex, thus reducing the degree of the root. We repeat this until each vertex has degree at most one in the edge cover (i.e. - it forms a matching) . In $H$, select this matching, once in each copy of $G$ and observe that the cost of the matching within the second copy $G'$ is zero. Thus given $F$ we can find the perfect matching in $H$ whose weight is no larger. For the converse we construct a cover $F$ from the given perfect matching $M$ in $H$. For each edge $(v, v')\in M$, add to $F$ a least weight edge incident to $v \in G$. Also include in $F$ any edge of $G$ that was matched in $M$. The set constructed $F$ is an edge cover and the weight of this edge cover is equal to that of $M$. 
+\end{proof}
+\newpage
+\section{Problem 4}
+Let $G=(V, E)$ be an undirected graph with weights on edges, create a copy $G'=(V', E')$ with zero weight on all edges. Form a graph $H=(V, V, E'')$ by taking $G$ and $G'$ and connecting the vertex $v$ to its copy $v'$ via an edge of weight zero. Given a vertex $s$ and $t$, we find the minimum weight perfect matching $M$ in $H\setminus\{s', t'\}$. Let $P=(V, E'')$ contain exactly the edges of $M$ that were copied from $G$. One connected component of $P$ is a minimum parity weight $s-t$ path with an odd number of edges and its parity weight is equal to $M$'s total weight.  
+
+To prove the reduction, let $P$ be a minimum parity weight $s-t$ path in $G$ with odd number of edges. Let $M$ be the perfect matching of $H\setminus\{s', t'\}$ containing $G$'s copies of the first, third edges of $P$ and $G'-$'s copies of the second, fourth, etc. edges of $P$ and the zero weight edges between $v$ and $v'$ for every vertex not in $P$. Matching $M$ has the same weight as $P's$ parity weight, so some perfect matching of $H$ contains $P$ and has the correct weight. 
+
+For the other direction, if $M$ is a perfect matching in $H\setminus\{s', t'\}$ and let $P = (V, E'')$ contain edges of $M$ that were copied from $G$. For every vertex $v\not= s, \, t$ either $v$ is incident to two edges copied from $G$ in $M$ or both copies of $v$ were matched along a zero weight edge not present in $G$. Vertices $s$ and $t$ have one matched copy in $M$, therefore every vertex of $P$ has degree two or zero except for $s$ and $t$ which have degree one. Therefore, $s$ and $t$ lie in the same connected component of $P$ and that component is a path. Further, when one traces the edges of the $s-t$ path it comes from $G$, then $G'$ alternating until ending at $G$. There are an odd number of edges, and the parity weight of the path is the weight of those edges in $H$. Every other component of $P$ must have non-negative weight so $M$ is a perfect matching in $H\setminus\{s', t'\}$ with weight no less than $P$. 
+
+\textbf{Note:} For finding the minimum parity weight $s-t$ path with an even number of edges we can repeat the same procedure with $H\setminus\{s, t\}$. 
+\newpage
+\section{Problem 5}
+For any graph $G$, we define the matching polytope as follows: 
+\begin{equation*}
+    \begin{split}
+         P_G = \biggl\{x\in \mathbb{R}^E: x_e \ge 0 \, \forall e\in E(G),&\\
+         \sum_{e\in \delta(v)} x_e = 1 \, \forall v\in V(G),&\\
+         \sum_{e\in \delta(A)} x_e \ge 1 \, \forall A\subseteq V(G), \card{A} \text{is odd}&\biggr\}
+    \end{split}
+\end{equation*}
+We assume that $G$ is $k-$regular and $(k-1)$-edge connected and $\card{V(G)}$ is even. Our claim is that the vector $f = \frac{1}{k} \mathbb{1}$ is in the perfect matching polytope. To note this we check the constraints as follows, 
+\begin{itemize}
+    \item As all components of $f$ are non-negative, clearly the non-negativity constraint is satisfied. 
+    \item For any vertex $v$, $\sum_{e\in \delta(v)} f_e = 1$ (as the graph is $k$-regular hence for each singleton cut we have $k$ outgoing edges and we sum components of $f$ which are each $1/k$)
+    \item For the last constraint, we are given that $\card{V}$ is even so for any $A$ of odd cardinality we have $A\not= V$ and as the graph is $(k-1)-$edge connected we have $\delta(A) \ge (k-1)$ as if there was some set $A$ such that $\delta(A) < (k-1)$ then we can pick the edges in the cut-set to contradict the edge-connectivity. If we denote the edges having both ends in $A$ as $\gamma(A)$, then we can note that $2\card{\gamma(A)} + \card{\delta(A)} = k \card{A}$ as the graph is $k-$regular and as $A$ has odd-cardinality it follows that $\delta(A)$ and $k$ must have the same parity (as if $\card{\delta(A)}$ is odd and $k$ is even then we will have $2\card{\gamma(A)}$ to be an odd number which is not true.) Hence $\card{\delta(A)} \ge k$ and this implies that $\sum_{e\in \delta{A}} f_e \ge 1$. 
+\end{itemize}
+As $f$ lies in the polytope it is a convex-combination of the extreme-points all of which correspond to a perfect matching. Since $f_e>0, \, \forall e \in E$ at least one of the perfect matchings must include $e$, for each $e\in E$. Hence every edge of $G$ is in a perfect matching also some of the perfect matching vectors $x$ must satisfy $c^\top x \ge c^\top f = c(E)/k$
+\end{document}

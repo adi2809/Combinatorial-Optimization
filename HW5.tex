@@ -1,0 +1,280 @@
+\documentclass{article}
+\setlength{\parskip}{3mm}
+
+\usepackage{tikz, pgfplots}
+\usetikzlibrary{automata}
+\usetikzlibrary{graphs,shapes.geometric} 
+\usetikzlibrary{patterns}
+\usepackage{graphicx, float, xcolor}
+\usepackage{mathtools, mathrsfs, caption}
+\usepackage{amsmath, amsfonts, amssymb, amsthm, mathtools, mathrsfs}
+\captionsetup{font=small}
+\numberwithin{equation}{section}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\numberwithin{theorem}{section}
+\numberwithin{lemma}{section}
+
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\newcommand\mycommfont[1]{\footnotesize\ttfamily\textcolor{blue}{#1}}
+% \SetCommentSty{mycommfont}
+
+% \SetKwInput{KwInput}{Input}                % Set the Input
+% \SetKwInput{KwOutput}{Output}              % set the Output
+\newcommand{\bigOh}[1]{\mathcal{O}\left(#1\right)}
+\newcommand{\smallOh}[1]{\mathcal{o}(#1)}
+\newcommand{\bigOmega}[1]{\Omega\left(#1\right)}
+\newcommand{\smallomega}[1]{\omega(#1)}
+\newcommand{\bigTheta}[1]{\Theta(#1)}
+\newcommand{\curlyBrace}[1]{\left\{#1\right\}}
+\newcommand{\roundBrace}[1]{\left(#1\right)}
+\newcommand{\probsymb}[1]{\mathbb{P}\curlyBrace{#1}}
+
+\usepackage{hyperref, biblatex}
+\hypersetup{linkcolor=blue}
+\usepackage[breakable,skins]{tcolorbox}
+
+\tcbuselibrary{breakable}
+\newcommand{\stepNumber}[1]{\textcolor{blue}{Step-(#1)}}
+\newcommand{\card}[1]{\left|#1\right|}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\chead{IEOR 6614: Homework 5}
+\rhead{\textbf{UNI:} ag4808}
+\lhead{04/14/2024}
+
+\begin{document}
+
+\section{Problem 1}
+Given a ground set of elements $X= \{x_1, \dots, x_n\}$ and a family of subsets of the ground set $S = \{S_1, \dots, S_m\}$ and a budget of $k\in\mathbb{Z}^{+}$ such that we use the budget to find a family of subsets $\mathcal{S}$  maximize the coverage . Instead of finding $\mathcal{S}$ , we focus on finding the indices of subsets in $S$, that will be included in the solution also let $f_c(.)$ denote the coverage function.  The greedy-algorithm can be proposed for the problem, 
+
+\begin{algorithm}[H]
+    \caption{Greedy-Coverage($X, S, k$)}
+    \begin{algorithmic}[1]
+        \State $\mathcal{K}\coloneqq \varnothing$
+        \For{$j\coloneqq 1$ to $k$ }
+            \State $ i^* \coloneqq \arg\max_{i\in[m]} \curlyBrace{\left\vert\bigcup_{l\in\mathcal{K} \cup \curlyBrace{i}} S_l \right\vert - \left\vert \bigcup_{l\in\mathcal{K}} S_l \right\vert }$ 
+            \State $\mathcal{K} \leftarrow \mathcal{K} \cup \{i^*\}$
+    \EndFor
+    \State \textbf{return} $\mathcal{K}$ 
+\end{algorithmic}
+\end{algorithm}
+\begin{theorem}
+\label{t1}
+
+    For each iteration $j \in [k]$, let $C_j$ be the coverage achieved by the first $j$ subsets chosen by the greedy-algorithm. For each $j$, the $j^{th}$ subset chosen covers at least $\frac{1}{k}(C^* - C_{j-1})$  new elements, where $C^*$ denotes the maximum-possible coverage by $k$ subsets. 
+        \begin{equation}
+        \label{e1}
+        (C_j - C_{j-1}) \ge \frac{1}{k}(C^* - C_{j-1}) 
+    \end{equation}
+\end{theorem}
+\begin{proof}
+    Let $\mathcal{K}_j$  be the indices of the first $(j-1)$ subsets chosen by the greedy-algorithm and $C_{j-1}$ is the coverage of $\mathcal{K}_j$ . Consider any competing set $\hat{\mathcal{K}}$ of $k$ indices, with the corresponding coverage $\hat{C}$. Then we show that the following holds, 
+    \begin{equation}
+        \label{e2}
+        \sum_{i \in \hat{\mathcal{K}}} \roundBrace{f_c(\mathcal{K}_{j-1} \cup \{i\})- C_{j-1}} \ge \hat{C} - C_{j-1}
+    \end{equation}
+    
+  Which means that sum of coverage increase from adding $S_i$  for $i \in \hat{\mathcal{K}}$  upper bounds the current coverage gap   \ref{e2}.  To prove this we can note that for the left-hand side if each of the summands were equal then they will be equal to the average ; hence we have 
+  \begin{equation}
+    \label{e3}
+      \max_{i \in \hat{\mathcal{K}}} \roundBrace{f_c(\mathcal{K}_{j-1} \cup \{i\})- C_{j-1}} \ge \frac{1}{k}\sum_{i \in \hat{\mathcal{K}}} \roundBrace{f_c(\mathcal{K}_{j-1} \cup \{i\})- C_{j-1}} 
+  \end{equation}
+  If we now put $\hat{\mathcal{K}} = \mathcal{K}^*$ (optimal solution) with coverage $C^*$  we can see that the greedy algorithm has at least one good option inside it (\ref{e2} \ref{e3})
+  \begin{equation}
+    \label{e4}
+      \max_{i \in \mathcal{K}^*} \roundBrace{f_c(\mathcal{K}_{j-1} \cup \{i\})- C_{j-1}} \ge \frac{1}{k}\roundBrace{C^* - C_{j-1}}
+  \end{equation}
+\end{proof}
+\begin{theorem}
+    The coverage of the greedy-solution is always at least a $1-\roundBrace{1-1/k}^k$ fraction of the maximum-possible coverage. 
+\end{theorem}
+\begin{proof}
+    We use the ideas from Theorem \ref{t1} , the $C_j$ be the coverage achieved by the algorithm's solution and let $C^*$ be the maximum-possible coverage using $k$-subsets from $S$. From the previous theorem we know for $j=k$, 
+    \begin{equation}
+        \label{e4}
+        \begin{split}
+            C_k &\ge \frac{C^*}{k} + \roundBrace{1 - \frac{1}{k}} C_{k-1}\\
+            &\ge \frac{C^*}{k}\roundBrace{
+                1 + \roundBrace{1-\frac{1}{k}} + \dots + \roundBrace{1-\frac{1}{k}}^{k-1}\\
+                &= C^*\roundBrace{1-\roundBrace{1-\frac{1}{k}}^k}
+            }
+        \end{split}
+    \end{equation}
+\end{proof}
+All that is left to do, is to approximate the function of $k$, in the above expression we do so by noting that $(1-1/k) \le e^{-1/k}$ and substitute this in \ref{e4}, to get the desired approximation ratio. 
+\newpage 
+\section{Problem 2}
+Based on the provided time complexity, if we design an algorithm that first sorts edges by weight in descending order and then sequentially adds edges maintaining a matching. 
+\begin{algorithm}
+    \caption{Max-Weight-Matching(G)}
+    \begin{algorithmic}[1]
+        \State $M\coloneqq \varnothing$
+        \State Set every vertex $u\in V$ as unmarked. 
+        \ForAll{$e\in E$ by non-increasing weight}
+            \If{$u$ and $v$ are both unmarked}
+                \State Mark $u$ and $v$. 
+                \State $M \leftarrow M \cup (u, v)$
+            \EndIf
+        \EndFor
+        \State \textbf{return} $M$
+    \end{algorithmic}
+\end{algorithm}
+\begin{theorem}
+    Let $M^*$ be the maximum-weighted matching of $G$, and $M$ be the matching generated by the greedy-algorithm then $w(M) \ge \frac{1}{2} w(M^*)$. 
+\end{theorem}
+\begin{proof}
+   Every time the algorithm selects an edge $e\in E$ and adds it to the current matching, it essentially discards all edges incident to one of the end points of $e$ from being added to the matching as $e$ is the heaviest among all such edges. Observe $e$ and all the edges incident to it, we can have three cases:
+   \begin{itemize}
+       \item $e \in M \cap M^*$
+       \item There is exactly one edge $e' \in M^*$ incident to $e$. As $e$ is the heaviest we have $w(e) > w(e') > \frac{1}{2}w(e')$
+       \item There are exactly two edges $e'$ and $e''$ in $M^*$ incident onto $e$. As $w(e) > w(e')$ and $w(e) > w(e'')$ we can note that $w(e) > \frac{1}{2}(w(e') +w(e''))$
+   \end{itemize}
+   We can sum over all the edges in the greedy-solution to get, 
+   \begin{equation}
+       \label{e8}
+       \begin{split}
+           w(M) &= w(M\cap M^*) + w(M\setminus M^*)\\
+           &\ge w(M\cap M^*) + \frac{1}{2} \sum_{e \in M^*\setminus M} w(e)\\
+            &\ge \frac{1}{2}(w(M\cap M^*) + w(M^*\setminus M))\\
+            &= \frac{1}{2}w(M^*)\\
+       \end{split}
+   \end{equation}
+\end{proof}
+As we sort the edges first, the algorithm runs in $\bigOh{|E|\log |V|}$
+\newpage
+\section{Problem 3}
+The integer program that models the hitting set problem is given by, 
+\begin{equation}
+    \begin{array}{ccc}
+        \min& \sum_{x\in X} w_x y_x&  \\\\
+        s.t.& \sum_{x\in S_i} y_x \ge 1&\forall i \in [m]\\\\
+        &y_x \in \{0, 1\}& \\
+    \end{array}
+\end{equation}
+The dual for the linear-relaxation of the integer program is given by, 
+\begin{equation}
+    \begin{array}{ccc}
+        \max& \sum_{i\in [m]} z_i&  \\\\
+        s.t.& \sum_{i:x\in S_i} z_i \le w_x&\forall x\in X\\\\
+        &z_i \ge 0& \forall i\in [m]\\
+    \end{array}
+\end{equation}
+Consider the following primal-dual scheme, 
+\begin{algorithm}[H]
+    \caption{Primal-Dual($X,\, S$)}
+    \begin{algorithmic}[1]
+        \State $z\coloneqq 0$
+        \State $A\coloneqq \varnothing$
+        \While{$A$ is not primal-feasible}
+            \State Find $S_i$, such that $S_i \cap A = \varnothing$
+            \State Increase $z_i$, until, $\exists x\in S_i : \, \sum_{i:x\in S_i} z_i = w_x$
+            \State$ A\leftarrow A\cup \{x\}$
+        \EndWhile
+        \State \textbf{return} $A$
+    \end{algorithmic}
+\end{algorithm}
+\begin{lemma}
+    The set $A$ obtained at the end of the primal-dual algorithm is a primal-feasible solution. 
+\end{lemma}
+\begin{proof}
+    For the sake of contradiction assume that there exists some $S_i$ such that $A \cap S_i = \varnothing$, then for all $x \in S_i$ we must have $\sum_{i:x\in S_i} z_i^* < w_x$. Since the dual inequalities for $x \in S_i$ are the only ones in which $z_i^*$ contributes we can increase $z^*_i$ by $\varepsilon > 0$ such that, 
+    \begin{equation}
+        \varepsilon = \min_{x\in S_i} \roundBrace{w_x - \sum_{j:x\in S_j}z^*_j}
+    \end{equation}
+    This means that $z^*$ is not dual-optimal which is a contradiction. 
+\end{proof}
+\begin{theorem}
+    If we define $\alpha = \max_i \card{S_i}$, then the solution generated by the primal-dual algorithm is an $\alpha-$approximation to the hitting set problem. 
+\end{theorem}
+\begin{proof}
+    Let $A$ be the set returned by the algorithm then, 
+    \begin{equation}
+        \begin{split}
+            \sum_{x\in A} w_x &= \sum_{x\in A} \sum_{i:x\in S_i} z^*_i\\
+            &= \sum_{i\in[m]} z^*_i \card{A\cap S_i}\\
+            &\le \roundBrace{\max_i \card{S_i}} \sum_{i\in[m]} z^*_i\\\\
+            &= \alpha \roundBrace{\sum_{i\in[m]} z^*_i} \\
+            &\le \alpha \cdot \text{OPT}
+        \end{split}
+    \end{equation}
+\end{proof}
+For using the above algorithm for the vertex cover problem, we can use the following idea: 
+\begin{itemize}
+    \item let $X = V$, the set of vertices of the graph be the ground-set. 
+    \item for all edges $e = (u, v) \in E$, include $S_e = \{u, v\}$ in the collection of subsets to be hit. 
+\end{itemize}
+For this case, $\alpha = 2$, hence we will get a 2-approximation for the minimum weighted vertex cover problem. If the weights are all equal to one, we get a 2-approximation to the minimum cardinality vertex cover. 
+\newpage
+\section{Problem 4}
+Let us design an dynamic programming problem that works in $O(nV)$ for the 0/1 knapsack problem. Let the optimum solution $o(k, v)$ be the minimum capacity necessary to store exactly $v$ units of value with the first $k$ items (defaults to $\infty$ if not possible), then $o(k, v)$ satisfies the following recurrence, 
+\begin{equation}
+    o(k, v) = \begin{cases}
+        0& k=0, \, v = 0\\
+        \infty& k=0, \, v>0\\
+        o(k-1, v)& v_k > v\\
+        \min\{o(k-1, v), w_k + o(k-1, v-v_k)\} & else
+    \end{cases}
+\end{equation}
+I provide a short proof for the substructure lemma, clearly the base cases are true trivially as generating any value except zero using no items is not possible. Now for some $k>0, \, v\geq 0$ let us assume we have some optimal solution $f < o(k, v)$, if the $k^{th}$ item has value greater than $v$, then as $v_k > v$, $f$ cannot contain the last item and hence there is a way to generate $v$ using the first $(k-1)$ items using less space than $o(k-1, v)$ which is a contradiction to the optimality. In the last case, assume we have some optimal solution $f < o(k, v) = \min\{o(k-1, v), w_k + o(k-1, v-v_k)\}$, then if $f$ has the $k^{th}$ item then removing it from the knapsack generates a better solution for the first $(k-1)$ items and value $(v-v_k)$, and similarly if it is not in the solution then we have a better solution using the first $(k-1)$ items to generate value $v$. This again contradicts the optimality of $o(k-1, v)$ and $o(k-1, v-v_k)$ and we are done. Note that this algorithm clearly works on $\bigOh{nV}$ (as we solve all sub-problems where $ 0\le k\le n$ and $0\le v\le \sum v_i = V$) 
+\begin{algorithm}
+    \caption{Knapsack($n$, values, weights)}
+    \begin{algorithmic}[1]
+        \State Let DP be a $(n+1) \times (V+1)$ table. 
+        \State Set DP$[0][0] \coloneqq 0$
+        \ForAll{$v = 1 \textbf{ to } V$}
+            \State Set  DP$[0][v] \coloneqq \infty$
+        \EndFor
+        \ForAll{$k = 1 \textbf{ to } n$}
+            \ForAll{$v = 1 \textbf{ to } V$}
+                \If{$v_k > v$}
+                    \State DP$[k][v] \leftarrow $  DP$[k-1][v]$
+                \Else
+                    \State DP$[k][v] \leftarrow \min \{$  DP$[k-1][v],$ $w_k+$ DP$[k-1][v-v_k]\}$
+                \EndIf
+            \EndFor
+        \EndFor
+        \State \textbf{return} highest entry in the $n^{th}$ row that satisfies the capacity constraint. 
+    \end{algorithmic}
+\end{algorithm}
+
+Now for the problem at hand, we know we can take at most $k$-copies of the same item we modify the instance by adding the copies of each of the items. For this $V' = kV$ and $n' = nk$ ; now run the above algorithm it will take $\bigOh{nk^2V}$. 
+\newpage 
+\section{Problem 5}
+The integer program for the independent set problem is given by, 
+\begin{equation}
+    \begin{array}{ccc}
+        \max& \sum_{v \in V} x_v&  \\
+        s.t.& x_u + x_v \le 1 &\forall \{u,v\}\in E\\
+        & x_v \in \{0, 1\}& \forall v \in V
+    \end{array}
+\end{equation}
+The main problem with this is when we have a complete graph on $n$-vertices (denoted by $K_n$), if we set $x_v=1/2$ for all vertices then it can be seen that this solution is definitely feasible for the LP relaxation and has a value of $n/2$ but the original IP has value $1$ (as the maximal-clique has size $n$ hence we can pick only one vertex)
+
+To formulate a quadratic program, we take variables $x_v, \, \, \forall v \in V$ and encode the integrality constraint by a quadratic equality constraint $x_v^2 = x_v, \, \, v \in V$. If two vertices are adjacent then we can pick only one of them, an easy way to encode this is $\forall e=(u, v) \in E, \, \, x_u x_v = 0$
+\begin{equation}
+    \begin{array}{ccc}
+        \max& \sum_{v \in V} x_v&  \\
+        s.t.& x_u x_v = 0 &\forall \{u,v\}\in E\\
+        & x_v^2 = x_v & \forall v \in V
+    \end{array}
+\end{equation}
+Consider the following semi-definite relaxation, 
+\begin{equation}
+    \begin{array}{ccc}
+        \max& e^\top X e&  \\
+        s.t.& \mathbf{Tr}\roundBrace{X} = 1\\
+        & X_{uv} = 0 & \forall (u, v) \in E\\
+        &X \succcurlyeq 0&
+    \end{array}
+\end{equation}
+When the graph is fully-connected, then note that the objective function is equal to the trace of the matrix $X$, which is constrained to be one and that is the correct size of the stable set of a complete graph. Now if $\mathcal{S}$ is a independent set then construct a vector, 
+\begin{equation}
+    \chi^\mathcal{S}_v = \begin{cases}
+        1& v \in S\\
+        0& v \notin S
+    \end{cases}
+\end{equation}
+If we take $X = \frac{\chi^S ({\chi^S})^\top}{\card{S}}$, then note that is feasible for the SDP as for each edge $e = (u, v) \in E$ we have $X_uv = 0$ as either $\chi^S_v$ or $\chi^S_u$ equals zero. For checking the trace, since $X$ has a $1/\card{S}$ on the diagonal for each $X_{uu}$, with $i \in S$. Since $X$ is an outer product, we have $X\succcurlyeq 0$, so $X$ satisfies all constraints and value of the objective function is $\card{S}$. 
+\end{document}
