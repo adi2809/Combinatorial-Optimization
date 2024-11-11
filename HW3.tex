@@ -1,0 +1,196 @@
+\documentclass{article}
+\setlength{\parskip}{3mm}
+
+\usepackage{tikz, pgfplots}
+\usetikzlibrary{automata}
+\usetikzlibrary{graphs,shapes.geometric} 
+\usetikzlibrary{patterns}
+\usepackage{graphicx, float, xcolor}
+\usepackage{mathtools, mathrsfs, caption}
+\usepackage{amsmath, amsfonts, amssymb, amsthm, mathtools, mathrsfs}
+\captionsetup{font=small}
+\numberwithin{equation}{section}
+
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\newcommand\mycommfont[1]{\footnotesize\ttfamily\textcolor{blue}{#1}}
+% \SetCommentSty{mycommfont}
+
+% \SetKwInput{KwInput}{Input}                % Set the Input
+% \SetKwInput{KwOutput}{Output}              % set the Output
+\newcommand{\bigOh}[1]{\mathcal{O}\left(#1\right)}
+\newcommand{\smallOh}[1]{\mathcal{o}(#1)}
+\newcommand{\bigOmega}[1]{\Omega\left(#1\right)}
+\newcommand{\smallomega}[1]{\omega(#1)}
+\newcommand{\bigTheta}[1]{\Theta(#1)}
+\newcommand{\curlyBrace}[1]{\left\{#1\right\}}
+\newcommand{\roundBrace}[1]{\left(#1\right)}
+\newcommand{\probsymb}[1]{\mathbb{P}\curlyBrace{#1}}
+\usepackage{hyperref, biblatex}
+\hypersetup{linkcolor=blue}
+\usepackage[breakable,skins]{tcolorbox}
+\tcbuselibrary{breakable}
+\newcommand{\stepNumber}[1]{\textcolor{blue}{Step-(#1)}}
+\newcommand{\card}[1]{\left|#1\right|}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\chead{IEOR 6614: Homework 3}
+\rhead{\textbf{UNI:} ag4808}
+\lhead{02/27/2024}
+
+
+\begin{document}
+\section*{Problem 1}
+Let $V(M_2)$ be the set of covered vertices under the matching $M_2$, now as $M_2$ is a one-to-one matching we know that the cardinality of the covered vertex set is equal to twice the size of the matching, i.e. - \textcolor{red}{$\card{V(M_2)} = 2 \card{M_2}$}. 
+
+As $M_2$ is a maximal matching for every edge $e = \{u, v\}\in M_1$, we must have at least one end covered by $M_2$ or we can always extend $M_2$ to a bigger matching ($M_1\cup \{e\}$), which contradicts the fact that it is a maximal matching. Hence \textcolor{red}{$\card{V(M_2)} \ge \card{M_1}$}. 
+
+Hence we can combine the two results in red, to get $2\card{M_2} \ge \card{M_1}$. 
+\newpage
+\section*{Problem 2}
+Let $\langle P, \le \rangle$ be a poset, 
+\begin{itemize}
+    \item For any $x, y \in P$, they are comparable if either $x \le y$ or $y \le x$. Else we say that $x$ and $y$ are incomparable. 
+    \item A subset $C\subset P$, is called a chain if every pair of elements of $C$ are comparable. 
+    \item A subset $A\subset P$ is called an anti-chain if every pair of distinct elements of $A$ are incomparable. 
+    \item The size of the largest anti-chain in $P$ is called the width of $P$, denoted by $w(P)$. 
+    \item A chain cover of $P$ is a partition of $P = C_1\cup \dots \cup C_k$, where each $C_i$ is a chain in $P$. The smallest $k$ for which there is a chain-cover of $P$ using $k$-chains is called the chain-cover number and is denoted by $c(P)$
+\end{itemize}
+\textbf{Claim 1:} Let $P$ be a poset, if $C$ is a chain in $P$ and $A$ is an anti-chain in $P$, then $\card{A\cap C} \le 1$
+\begin{proof}
+    Assume that there exists $A$ and $C$ such that the inequality is violates then we can find two elements $x, \, y\in C$ that are not comparable. But then $x$ and $y$ are also distinct elements of $A$ which are comparable so $A$ cannot be an anti-chain. 
+\end{proof}
+
+\noindent \textbf{Claim 2:} Let $P$ be a finite poset, then $w(P) \le c(P)$. 
+\begin{proof}
+    Let $A_m$ be the anti-chain of maximum size in $P$, hence $\card{A} = w(P)$. and let $P = C_1\cup \dots\cup C_k$ be the smallest-chain cover of $P$ such that $k = c(P)$, then using the previous claim
+    \begin{equation}
+        \label{e1}
+        w(P) = |A| = \sum_{i=1}^{k} \card{A \cap C_i} \le c(P)
+    \end{equation}
+\end{proof}
+\noindent \textbf{Claim 3:} If $\langle P, \leq\rangle$ is a finite poset, then $w(P) = c(P)$.
+\begin{proof}
+    Let us make two copies of each element in $P$ in the form of vertex sets $X=\{x: \, x\in P\}$ and $Y=\{y: \, y \in P\}$. We build a bipartite graph $G = (X\cup Y, E)$, where $E$ has an edge between vertices $x$ and $y$ if $x < y$. Let $R\subset V(G)$ be the minimum-vertex cover of $G$, which means $\card{R} = \beta(G)$, we will use $R$ to construct an anti-chain in $P$.
+
+    \noindent \textbf{Sub-Claim 3.1:} For every $x \in P$, $R$ contains at most one copy i.e. - either from $X$ or from $Y$ ( for convenience denote these as $x^-$  and $x^+$) 
+    \begin{proof}
+        Suppose that $x^-$ and $x^+$ are both in $R$, then as $R$ is a minimum vertex cover of $G$ we know that $R\setminus\{x^-\}$ cannot be a vertex cover of $G$. Hence there must exists an edge $x^-y^+ \in E(G)$ such that $y^+\notin R$. Similarly, $R\setminus\{x^+\}$ cannot be a vertex-cover of $G$, so there must be some edge $z^-x^+ \in E(G)$, where $z^- \notin R$. By definition we have $z \le x$ and $x \le y$, so $z \le y$ by transitivity. Since edges of form $w^-w^+$ do not exist in $G$, hence it must be that $y\not= z$ (else we will get $x = y = z$ by anti-symmetry)
+
+        This means that $z < y$ so $z^-y^+ \in E(G)$ but neither $z^-$ nor $y^+$ are elements of $R$ so $R$ does not cover edge $z^-y^+$ which leads to a contradiction. 
+    \end{proof}
+
+    \noindent \textbf{Sub-Claim 3.2:} Let $A = \{x \in P : \, R \cap \{x^-, x^+\} = \varnothing\}$, then $A$ is an anti-chain in $P$ and $\card{A} = \card{P} - \beta(G)$. 
+    \begin{proof}
+        Assume that $A$ is not an anti-chain then we can find $x\not=y \in A$ such that $x < y.$ But then we will have $x^-y^+ \in E(G)$. Since $R$ is a vertex cover either $x^- \in R$ or $y^+ \in R$. Thus $\card{R} = \card{\{x \in P : \, R \cap \{x^-, x^+\} = \varnothing\}}$, which means that $\card{A} + \card{R} = \card{P}$, and we are done. 
+    \end{proof}
+
+    Hence using the above sub-claims we were able to construct an anti-chain of size $\card{P} - \beta(G)$, hence $w(P) \ge \card{P} - \beta(G)$. We need to construct a chain cover such that we can show $c(P) \le \card{P} - \beta(G)$. 
+
+    We construct a di-graph $D$ which has the vertex set as $G$ and $(x, y) \in E(G)$ iff $x^-y^+ \in M$, where $M$ is the maximum matching of $G$. Also define sets $U^+$ and $U^-$ which denote the vertices covered by $M$ in the sets $Y$ and $X$ respectively. As $M$ is a matching we have, 
+    \begin{itemize}
+        \item if $x \in U^-\setminus U^+$, then $\delta^+(x) =1$ and $\delta^-(x) = 0$
+        \item if $x \in U^+\setminus U^-$, then $\delta^-(x) =1$ and $\delta^+(x) = 0$. 
+        \item If $x \in U^+ \cap U^-$ then $\delta^-(x) =1 = \delta^+(x)$
+    \end{itemize}
+    It means that $D$ is disjoint union of directed paths with lengths greater than or equal to unity. Moreover if we pick anyone of the directed paths then edge between consecutive $+$ and $-$ vertex will be in $M$. Thus it is a chain in $P$. Using these we can cover a $U\subset P$ by at most $\card{U^-\setminus U^+}$ many chains. We can then use $\card{P\setminus U}$ singleton chains to get a chain cover with size at most $\card{P} - \card{U^+} = \card{P}-\card{M} = \card{P} - \alpha(G)$. We can then use Konig's theorem to say that the size of the minimum-vertex cover is equal to the size of maximum-matching and we arrive at the opposite inequality which finishes the proof. 
+\end{proof} 
+\newpage
+\section*{Problem 3}
+Let $M$ and $M'$ be matchings that cover $S$ and $T$. Consider the sub-graph $H = (V, M \cup M')$. Then any connected compnent in this sub-graph can be, 
+\begin{itemize}
+    \item A single vertex, 
+    \item A single edge shared by both $M$ and $M'$.
+    \item A cycle with alternating edges (i.e. - one in $M$ and other in $M'$)
+    \item A path with alternating edges (i.e. - one in $M$ and other in $M'$)
+\end{itemize}
+Let $C_1, \dots C_l$ be the components of $H$ then we can choose a matching $M_i$ for the component $C_i$ such that,
+\begin{itemize}
+    \item If $H_i$ is single-vertex then it is not in $S \cup T$ and we let $M_i = \varnothing$. 
+    \item If $C_i$ is a single edge or a cycle or a odd-length path then $H_i$ admits a matching $M_i$ which covers $V(C_i)$, and hence it covers $(S\cup T \cap V(C_i))$, so one end of the path is incident with an edge in $M$ and the other in $M'$. Set $M_i = M \cap E(C_i)$
+    \item If the path is not of an odd length then either both ends are in $A$ or both ends are in $B$. Then set $M_i = M'\cap E(C_i)$. In either case we can see that all vertices in $(S \cup T)\cap C_i$ are covered by $M_i$. 
+\end{itemize}
+We can just take the union of all $M_i$ to form a matching in $G$ that covers $S \cup T$.
+\newpage
+\section*{Problem 4}
+For (i) - If $M$ is a matching in $G$, then each odd-component of $G$ must include at least one vertex not covered by $M$. Therefore we have $\card{U} \ge \gamma(G)$, where $U$ is the number of such vertices and $\gamma(G)$ is the number of odd components of $G$. Now if we take any $S \subset V$ and let $M$ be a matching in $G$. Consider an odd component $H$ of $G\setminus S$. If every vertex of $H$ is covered by $M$, at least one vertex of $H$ must be matched with a vertex of $S$. Because no more than $\card{S}$ vertices of $G\setminus S$ are matched to vertices of $S$. Hence at least $\gamma(G\setminus S)-\card{S}$ odd components of $G$ must contain vertices not covered by the matching. This means, 
+\begin{equation}
+    \label{e2}
+    \card{U} \ge \gamma(G\setminus S) - \card{S}
+\end{equation}
+But if $G$ has a perfect matching then using the above inequality we have $\gamma(G\setminus S) \le \card{S}$ for all $S\subset V$, as the set $U$ of uncovered vertices is empty. This proves one side. 
+
+Conversely if we let $G$ such that it does not have a perfect matching and let $M$ be the maximum cardinality matching of $G$ with the set of uncovered vertices being $U$. Then there exists a $B\subset V$ such that $\gamma(G\setminus B) - \card{B} = \card{U}$. As $M$ is not perfect we know that $\card{U} > 0$, hence 
+\begin{equation}
+    \label{e3}
+    \gamma(G\setminus B) = \card{B} + \card{U} \ge \card{B} + 1
+\end{equation}
+It can be seen that for such a $B$, $\card{U} \ge \gamma(G\setminus B) - \card{B}$ fails. 
+
+For (ii) - we can use the result from (i) ; let $G$ be a 3-regular graph with the given property, if we let $S\subset V$ be some subset of vertices of the graph. Consider the vertex sets $S_1, \dots, S_k$ of the odd components of $G\setminus S$. Due to the given condition on $G$ it should be noted that $\delta(S_i) \ge 2, \, \forall i\in[k]$, also due to the restriction on parity of $\card{S_i}$ we have $\delta(S_i)$ is odd so we can say that, 
+\begin{equation}
+    \delta(S_i) \ge 3, \, \forall i\in[k]
+\end{equation}
+Let us define $\Delta(S)$ as the set of edges of $G$ with exactly one end in $S$ (edge cut). We know that edge cuts $\Delta(S_i)$ are pairwise disjoint and $\Delta(S_i) \in \Delta(S)$ hence, 
+\begin{equation}
+    3k \le \sum_{i=1}^{k} \delta(S_i) = \delta(\cup_i S_i) \le \delta(S) \le 3 \card{S}
+\end{equation}
+Now we can use the previous part to see that $\gamma(G\setminus S) = k \le \card{S}$ and we are done. 
+
+\textcolor{red}{This should be tight $k = 0$ is the only situation.}
+\section*{Problem 5}
+\textbf{Claim :} A connected-graph has a Euler tour iff the degree of all vertices of the graph is even. 
+\begin{proof}
+    \textbf{Necessity:} If the graph $G$ has a Euler tour $P$. Every time a vertex appears in $P$, it will account for two edges adjacent to that vertex, the one that leads into it and the other that comes out of it. $P$ uses every edge exactly once hence every edge is counted once (there is no repetitions). Hence each vertex must have an even degree. 
+
+    \textbf{Sufficiency:} If we assume that $G$ is such that every node has even-degree. We want to show that there is a Euler tour in the graph via induction on the number of edges in the graph. For the base case consider a graph with two vertices and two edges between them, obviously it has a Euler tour.
+
+    Now if we have a graph with $m\ge 2$ edges, we start with any vertex $v$ and follow edges, arbitrarily selecting one after another until we return to $v$. Let us call this sub-tour $W$, we know that we will return to $v$ eventually because every time we encounter a vertex different from $v$ we are listing some edge adjacent to it. There are even number of edges adjacent to every vertex , so there will always be a suitable unused edge to list next. So this process terminates with taking us back to $v$. 
+
+    Let $E_W$  be the edges in $W$. The graph $G\setminus E_W$ has components $C_1, \dots C_k$ each of these will satisfy the induction hypothesis (connected, less than $m$ edges, every degree is even). We know that every degree is even in $G\setminus E_W$, because when we removed $W$ we removed an even number of edges from those vertices listed in $W$. By induction each component has a Eulerian tour $E_{C_1}, \dots, E_{C_k}$. Since $G$ is connected there is a vertex $a_i$ in each component $C_i$ on both $W$ and $E_{C_i}$. Without loss of generality, assume that as we follow $W$, the vertices $a_1, a_2, \dots, a_k$ are encountered in this order. Then an Euler tour of $G$ starting at $v$ follow $W$ until reaching $a_1$, following entire $E_{C_1}$ ending back at $a_1$, follow $W$ until reaching $a_2$, follow $E_{C_2}$, ending back at $a_2$ and so on. End by following $W$ until reaching $a_k$ follow entire $E_{C_k}$ ending back at $a_k$, then finish off $W$, ending at $v$. 
+\end{proof}
+\begin{algorithm}[H]
+    \scriptsize
+    \caption{TOUR($G$)}
+    \begin{algorithmic}[1]
+        \State Pick any vertex as a starting point. 
+        \State Add edges to build a tour, until returning to the start. It is impossible to get stuck somewhere else. 
+        \State If there are vertices on this tour with unvisited incident edges, start a new tour from these. 
+        \State Join the tours formed in this manner. 
+    \end{algorithmic}
+\end{algorithm}
+\noindent \textbf{Note:} that each of the steps takes time polynomial in the size of the graph, hence we can find the Euler Tour in poly-time. 
+\newpage 
+\section*{Problem 6}
+\textbf{Claim 1: }If $G$ is a Eulerian graph then the optimal solution to the given problem is the Eulerian tour of $G$ and the cost equals $\sum_{e\in E}c(e)$ ; provided the edge cost is non-negative. 
+\begin{proof}
+    Due to the property that the tour traverses all edges at least once, if the graph is Eulerian with the Eulerian tour $W_G$, then any other closed tour can be formed by adding some repeated edges to $W_G$, which will have a higher cost due to non-negativity of edge costs. 
+\end{proof}
+\noindent \textbf{Claim 2:} If the graph is not Eulerian then the number of nodes having an odd degree is even. 
+\begin{proof}
+    This is very easy to see via the sum of degrees of all nodes in the graph is even. Now if we have odd number of nodes having odd degrees we will have a contradiction due to a basic parity argument under addition. 
+\end{proof}
+Let us analyze part (i) - if we have a valid solution to the minimum-cost tour (with edge repetitions) ; we can write for each edge $e \in E$ $n_e = 1 + x_e$ as the number of times we traverse the edge $e$. Now extend the graph $G$ to $G'$ by adding $n_e$ copies of each edge $e$. $G'$ is an Eulerian graph, so by the previous problem there exists a Eulerian tour (as all nodes of $G'$ has even degree). Moreover if we have any $G'$ obtained from $G$ by addition of copies of certain edges, such that all vertices of $G'$ have even-degree, is Eulerian. If $x_e \ge 2$, we can decrease $x_e$ by two and obtain a Eulerian extension of $G$ with less weight, hence $x_e \in \{0, 1\}$ for all edges $e \in E$. Hence we are finding the minimal set of edges to be added to $G$ such that the we can extend it to an Eulerian Graph. 
+
+For part (ii) - We let $T\subseteq V$ such that $\card{T}$ is even. Let us define a set $J$ such that odd degree-vertices in the sub-graph $G' = (V, J)$ are the vertices in $T$. We want to find $J$ such that $c(J)$ is minimized, when $T$ is the set of odd-degree vertices in $G$. 
+
+\noindent \textbf{Claim 3:} A set $J$ is said to be inclusion-wise minimal if it is the union of edge sets of $\card{T}/2$ edge-disjoint simple paths, which join the vertices in $T$ in pairs. 
+\begin{proof}
+    Every set which is a union of edge-sets of paths has the property (i.e. - $J$ such that odd degree-vertices in the sub-graph $G' = (V, J)$ are the vertices in $T$.) We need to show the other side. 
+
+    Let $u \in T$, and let $H$ be the component of $G'=(V, J)$ containing $u$. If $T\cap V(H) = \{u\}$ then $H$ has only one odd-degree vertex, which cannot be true. So there exists some vertex $v\not = u$ such that $v \in T \cap V(H)$, which inturn means that there is a $(u, v)$ path $P$ such that $E(P) \subseteq J$. If we define $T' = T\setminus \{u, v\}$, then $J' = J\setminus E(P)$ is such that odd-degree vertices in the sub-graph having edge set $J'$ are the vertices in $T'$. We can do this again and again
+\end{proof}
+
+\noindent \textbf{Claim 4:} If the costs $c$ are non-negative, then we can always find a set $J$ for a given $T$ with the necessary property that is the union of $\card{T}/2$ edge-disjoint shortest paths joining vertices of $T$ in pairs. 
+\begin{proof}
+    If $J^*$ is the optimal set, then using the previous claim and non0negativity we can assume that $J^*$ is the union of edge-sets of $\card{T}/2$ paths joining vertices of $T$ in pairs. If we pick one of the paths and call it $P$ such that the two ends of the paths are $u, v\in T$. Then if there exists a $(u, v)$ path $P'$ of smaller cost than $P$, then we can find a better solution which leads to a contradiction (\textcolor{red}{T-joins and symmetric differences, not showing as that will be too much}). 
+\end{proof}
+Now if we denote $l(u, v)$ as the minimum-length/cost $(u, v)$-path in $G$ and let $T$ as the set of odd-degree vertices in $G$, then $\card{T} = 2q, \, \, q\in \mathbb{N}$ and the optimal $J$ can be found using the optimal solution of the following problem, 
+\begin{equation}
+    \begin{array}{cc}
+        \min  & \sum_{i=1}^{q} l(u_i, v_i) \\
+         s.t. & u_1v_1,\dots, u_kv_k \text{ is a matching }
+    \end{array}
+\end{equation}
+Formulate $G'' = (T, \Tilde{E})$, where the weight of the edge is $l(u, v)$ and we need to find a minimum-weight perfect matching in the graph (which can be further reduced to maximum weight problem using lecture content) 
+\end{document}
